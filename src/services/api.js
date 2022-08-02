@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const url = {
-  baseUrl: "http://localhost:6969/api",
+  baseUrl: "http://192.168.1.8:6969/api",
   login: "/login",
   employee: "/employee",
   project: "/project",
