@@ -1,0 +1,76 @@
+import { Fragment, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import userService from "../services/UserService";
+import "./login.css";
+
+const Login = (props) => {
+  const [errMessage, setErrMessage] = useState("");
+  const navigate = useNavigate();
+
+  const usernameRef = useRef();
+  const passwordRef = useRef();
+
+  useEffect(() => {
+    document.title = "Login";
+    sessionStorage.setItem("access", JSON.stringify(false));
+  }, []);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const username = usernameRef.current.value;
+    const password = passwordRef.current.value;
+    userService.login(username, password).then((res) => {
+      if (res.code === 0) {
+        sessionStorage.setItem("access", JSON.stringify(true));
+        navigate("/home");
+      } else {
+        setErrMessage(res.message);
+      }
+    });
+  };
+
+  return (
+    <Fragment>
+      <div className="container text-center h-100">
+        <div className="row align-items-center h-100">
+          <div className="col">
+            <form
+              className="form-login bg-light border border-secondary rounded rounded-3"
+              onSubmit={handleLogin}
+            >
+              <h2 className="mb-5">Đăng nhập</h2>
+              <div className="text-danger mb-2 small">{errMessage}</div>
+
+              <div className="form-group mb-2">
+                <label htmlFor="username">Tên tài khoản</label>
+                <input
+                  id="username"
+                  type="text"
+                  className="form-control mt-2"
+                  placeholder="Username"
+                  ref={usernameRef}
+                />
+              </div>
+
+              <div className="form-group mb-2">
+                <label htmlFor="password">Mật khẩu</label>
+                <input
+                  id="password"
+                  type="password"
+                  className="form-control mt-2"
+                  placeholder="Password"
+                  ref={passwordRef}
+                />
+              </div>
+              <button type="submit" className="btn btn-primary mt-2">
+                Đăng nhập
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Fragment>
+  );
+};
+
+export default Login;
