@@ -66,7 +66,7 @@ const EmpList = (props) => {
     [hideFirstName, hideLastName, hidePhone, hideEmail, hideNo]
   );
 
-  const [emps, setEmps] = useState(...[]);
+  const [emps, setEmps] = useState([]);
   const [filterText, setFilterText] = useState("");
   const filteredItems = emps.filter(
     (emp) =>
