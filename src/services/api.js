@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const url = {
-  baseUrl: "https:/lab4-serverr.herokuapp.com/api",
+  baseUrl: "https://lab4-serverr.herokuapp.com/api",
   login: "/login",
   employee: "/employee",
   project: "/project",
