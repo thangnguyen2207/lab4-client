@@ -8,7 +8,7 @@ const Home = (props) => {
   return (
     <Fragment>
       <div className="text-center pt-5">
-        <h1>Welcome Home :))))</h1>
+        <h1>Welcome Home</h1>
       </div>
     </Fragment>
   );

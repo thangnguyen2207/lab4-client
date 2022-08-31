@@ -1,7 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import EmpService from "../../services/EmpService";
 import ProService from "../../services/ProService";
-import moment from "moment";
 
 const ProDetail = (props) => {
   const [pro, setPro] = useState({});
