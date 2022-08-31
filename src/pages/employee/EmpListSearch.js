@@ -167,7 +167,7 @@ const EmpListSearch = () => {
   };
 
   const searchData = () => {
-    EmpService.listByProject(projectRef.current.value).then((res) => {
+    EmpService.assignList(projectRef.current.value).then((res) => {
       setEmps(res.data.content);
     });
   };
