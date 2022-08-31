@@ -3,8 +3,20 @@ import ProService from "../../services/ProService";
 import DataTable from "react-data-table-component";
 import moment from "moment";
 import DataTableHeader from "../../components/DataTableHeader";
+import { Button, Modal } from "react-bootstrap";
+import * as Yup from "yup";
+import { useFormik } from "formik";
+import InputField from "../../components/InputField";
+import { toast } from "react-toastify";
 
 const ProList = (props) => {
+  const [showModal, setShowModal] = useState(false);
+  const handleShowModal = () => setShowModal(true);
+  const handleCloseModal = () => {
+    setShowModal(false);
+    formik.resetForm();
+  };
+
   const [hideNo, setHideNo] = useState(false);
   const [hideName, setHideName] = useState(false);
   const [hideMaxHours, setHideMaxHours] = useState(false);
@@ -50,8 +62,12 @@ const ProList = (props) => {
       },
       {
         button: true,
-        cell: () => (
-          <a href="/#" className="btn btn-primary">
+        cell: (row) => (
+          <a
+            href="/project/detail"
+            className="btn btn-primary"
+            onClick={(e) => localStorage.setItem("cur-proId", row.projectId)}
+          >
             Detail...
           </a>
         ),
@@ -92,7 +108,7 @@ const ProList = (props) => {
           setFilterText(e.currentTarget.value);
         }}
         filterText={filterText}
-        filterPlaceHolder="Filter by name"
+        filterPlaceHolder="Search"
         exportData={filteredItems}
         exportFilename="project"
         dropdownItems={[
@@ -133,6 +149,14 @@ const ProList = (props) => {
                 : setHideEndDate(true),
           },
         ]}
+        modalBtn={true}
+        modalBtnOnClick={handleShowModal}
+        modalBtnTitle={
+          <Fragment>
+            <i className="fa-solid fa-plus"></i>
+            <span> Add</span>
+          </Fragment>
+        }
       />
     );
   }, [filterText, resetPaginationToggle, filteredItems]);
@@ -143,6 +167,25 @@ const ProList = (props) => {
     </pre>
   );
 
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      maxHours: 0,
+      startDate: "",
+      endDate: "",
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required(),
+      maxHours: Yup.number().required(),
+      startDate: Yup.date(),
+      endDate: Yup.date(),
+    }),
+    onSubmit: (value) => {
+      handleSaveBtn(value);
+    },
+    enableReinitialize: true,
+  });
+
   useEffect(() => {
     document.title = "Project List";
     loadData();
@@ -150,7 +193,19 @@ const ProList = (props) => {
 
   const loadData = () => {
     ProService.list().then((res) => {
-      setPros(res);
+      if (res.data.errorCode === 0) {
+        setPros(res.data.content);
+      }
+    });
+  };
+
+  const handleSaveBtn = (data) => {
+    ProService.add(data).then((res) => {
+      if (res.data.errorCode === 0) {
+        toast.success("Data has been saved");
+      }
+      handleCloseModal();
+      loadData();
     });
   };
 
@@ -158,6 +213,71 @@ const ProList = (props) => {
     <Fragment>
       <h1 className="h3">Project List</h1>
       <hr />
+
+      <Modal
+        show={showModal}
+        backdrop="static"
+        keyboard={false}
+        onHide={handleCloseModal}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add new Project</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row g-3">
+            <InputField
+              fieldClass="col-12"
+              fieldId="name"
+              fieldName="Name"
+              inputType="text"
+              frmField={formik.getFieldProps("name")}
+              err={formik.errors.name && formik.touched.name}
+              errMessage={formik.errors.name}
+            />
+            <InputField
+              fieldClass="col-sm-4"
+              fieldId="maxHours"
+              fieldName="Max Hours"
+              inputType="text"
+              frmField={formik.getFieldProps("maxHours")}
+              err={formik.errors.maxHours && formik.touched.maxHours}
+              errMessage={formik.errors.maxHours}
+            />
+            <div className="col-sm-8 d-none d-sm-block"></div>
+            <InputField
+              fieldClass="col-sm-6"
+              fieldId="startDate"
+              fieldName="Start Date"
+              inputType="date"
+              frmField={formik.getFieldProps("startDate")}
+              err={formik.errors.startDate && formik.touched.startDate}
+              errMessage={formik.errors.startDate}
+            />
+            <InputField
+              fieldClass="col-sm-6"
+              fieldId="endDate"
+              fieldName="End Date"
+              inputType="date"
+              frmField={formik.getFieldProps("endDate")}
+              err={formik.errors.endDate && formik.touched.endDate}
+              errMessage={formik.errors.endDate}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            onClick={formik.handleSubmit}
+            disabled={!formik.dirty || !formik.isValid}
+          >
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <DataTable
         columns={columns}

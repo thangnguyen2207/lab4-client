@@ -12,21 +12,24 @@ const Login = (props) => {
 
   useEffect(() => {
     document.title = "Login";
-    sessionStorage.setItem("access", JSON.stringify(false));
-  }, []);
+    localStorage.setItem("user-token", "");
+  });
 
   const handleLogin = (e) => {
     e.preventDefault();
     const username = usernameRef.current.value;
     const password = passwordRef.current.value;
-    userService.login(username, password).then((res) => {
-      if (res.code === 0) {
-        sessionStorage.setItem("access", JSON.stringify(true));
-        navigate("/home");
-      } else {
-        setErrMessage(res.message);
-      }
-    });
+    userService
+      .login(username, password)
+      .then((res) => {
+        if (res.data.errorCode === 0) {
+          localStorage.setItem("user-token", res.data.content);
+          navigate("/home");
+        }
+      })
+      .catch((error) => {
+        setErrMessage("Sai tên tài khoản hoặc mật khẩu");
+      });
   };
 
   return (

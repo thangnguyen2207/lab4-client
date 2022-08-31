@@ -49,14 +49,6 @@ const EmpListSearch = () => {
         sortable: true,
         omit: hideHoursWorked,
       },
-      {
-        button: true,
-        cell: () => (
-          <a href="/#" className="btn btn-primary">
-            Detail...
-          </a>
-        ),
-      },
     ],
     [hideEmail, hideFirstName, hideHoursWorked, hideLastName, hideNo, hidePhone]
   );
@@ -94,7 +86,7 @@ const EmpListSearch = () => {
           setResetPaginationToggle(!resetPaginationToggle);
         }}
         filterText={filterText}
-        filterPlaceHolder="Filter by name"
+        filterPlaceHolder="Search"
         exportData={filteredItems}
         exportFilename="employeeSearch"
         dropdownItems={[
@@ -162,16 +154,21 @@ const EmpListSearch = () => {
 
   const loadData = () => {
     ProService.list().then((res) => {
-      setPros(res);
-      EmpService.listByProject(res[0].projectId).then((res) => {
-        setEmps(res);
+      if (res.data.errorCode === 0) {
+        setPros(res.data.content);
+      }
+      console.log(res.data.content[0]);
+      EmpService.assignList(res.data.content[0].projectId).then((res) => {
+        if (res.data.errorCode === 0) {
+          setEmps(res.data.content);
+        }
       });
     });
   };
 
   const searchData = () => {
     EmpService.listByProject(projectRef.current.value).then((res) => {
-      setEmps(res);
+      setEmps(res.data.content);
     });
   };
 

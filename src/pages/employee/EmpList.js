@@ -54,14 +54,6 @@ const EmpList = (props) => {
         sortable: true,
         omit: hideEmail,
       },
-      {
-        button: true,
-        cell: () => (
-          <a href="/#" className="btn btn-primary">
-            Detail...
-          </a>
-        ),
-      },
     ],
     [hideFirstName, hideLastName, hidePhone, hideEmail, hideNo]
   );
@@ -94,7 +86,7 @@ const EmpList = (props) => {
           setResetPaginationToggle(!resetPaginationToggle);
         }}
         filterText={filterText}
-        filterPlaceHolder="Filter by name"
+        filterPlaceHolder="Search"
         exportData={filteredItems}
         exportFilename="employee"
         dropdownItems={[
@@ -181,13 +173,15 @@ const EmpList = (props) => {
 
   const loadData = () => {
     EmpService.list().then((res) => {
-      setEmps(res);
+      if (res.data.errorCode === 0) {
+        setEmps(res.data.content);
+      }
     });
   };
 
   const handleSaveBtn = (data) => {
     EmpService.add(data).then((res) => {
-      if (res.code === 0) {
+      if (res.data.errorCode === 0) {
         toast.success("Data has been saved");
       }
       handleCloseModal();
