@@ -154,7 +154,7 @@ const ProList = (props) => {
         modalBtnTitle={
           <Fragment>
             <i className="fa-solid fa-plus"></i>
-            <span> Add</span>
+            <span> Add </span>
           </Fragment>
         }
       />
