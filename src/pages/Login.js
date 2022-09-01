@@ -17,6 +17,15 @@ const Login = (props) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    setErrMessage(
+      <div
+        class="spinner-border"
+        role="status"
+        style={{ width: "20px", height: "20px" }}
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    );
     const username = usernameRef.current.value;
     const password = passwordRef.current.value;
     userService

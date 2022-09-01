@@ -171,7 +171,7 @@ const ProList = (props) => {
     initialValues: {
       name: "",
       maxHours: 0,
-      startDate: "",
+      startDate: new Date().toLocaleDateString("en-CA"),
       endDate: "",
     },
     validationSchema: Yup.object({

@@ -6,7 +6,7 @@ const get = (id) => api.get(`${api.url.project}/${id}`).then((res) => res);
 const add = (data) =>
   api.post(`${api.url.project}/add`, data).then((res) => res);
 const update = (data) =>
-  api.put(`${api.url.project}/update`, data).then((res) => res);
+  api.post(`${api.url.project}/update`, data).then((res) => res);
 const remove = (id) =>
   api.delete(`${api.url.project}/delete/${id}`).then((res) => res);
 

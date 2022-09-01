@@ -1,6 +1,11 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import EmpService from "../../services/EmpService";
 import ProService from "../../services/ProService";
+import * as Yup from "yup";
+import { useFormik } from "formik";
+import TableField from "../../components/TableField";
+import { useNavigate } from "react-router";
+import AssignService from "../../services/AssignService";
 
 const ProDetail = (props) => {
   const [pro, setPro] = useState({});
@@ -8,6 +13,33 @@ const ProDetail = (props) => {
   const [notAssignEmps, setNotAssignEmps] = useState([]);
   const [filterData, setFilterData] = useState(notAssignEmps);
   const searchKey = useRef();
+  const navigate = useNavigate();
+
+  const formik = useFormik({
+    initialValues: {
+      projectId: pro.projectId,
+      name: pro.name,
+      maxHours: pro.maxHours,
+      startDate:
+        pro.startDate !== null
+          ? new Date(pro.startDate).toLocaleDateString("en-CA")
+          : new Date().toLocaleDateString("en-CA"),
+      endDate:
+        pro.endDate !== null
+          ? new Date(pro.endDate).toLocaleDateString("en-CA")
+          : new Date().toLocaleDateString("en-CA"),
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required(),
+      maxHours: Yup.number().required(),
+      startDate: Yup.date(),
+      endDate: Yup.date(),
+    }),
+    onSubmit: (value) => {
+      handleProUpdate(value);
+    },
+    enableReinitialize: true,
+  });
 
   useEffect(() => {
     document.title = "Project Infomation";
@@ -45,9 +77,35 @@ const ProDetail = (props) => {
     setNotAssignEmps([...notAssignEmps].filter((emp) => emp !== selectedItem));
   };
 
-  const handleHoursWorkedChange = (id, value) => {
-    const changedIndex = assignEmps.findIndex((emp) => emp.employeeId === id);
-    assignEmps[changedIndex].hoursWorked = value;
+  const handleHoursWorkedChange = (index, value) => {
+    const newItems = [...assignEmps];
+    newItems[index].hoursWorked = value;
+    newItems[index].changed = true;
+    setAssignEmps(newItems);
+    console.log(assignEmps);
+  };
+
+  const handleItemRemove = (index) => {
+    const newItems = [...assignEmps];
+    newItems[index].deleted = true;
+    setAssignEmps(newItems);
+    console.log(assignEmps);
+  };
+
+  const handleProDelete = (id) => {
+    ProService.delete(id).then((res) => {
+      if (res.data.errorCode === 0) {
+        navigate("/project/list");
+      }
+    });
+  };
+
+  const handleProUpdate = (data) => {
+    ProService.update(data).then((res) => {
+      AssignService.assign(pro.projectId, assignEmps).then((res) => {
+        navigate("/project/list");
+      });
+    });
   };
 
   return (
@@ -114,30 +172,31 @@ const ProDetail = (props) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {assignEmps.map((emp, idx) => (
-                    <tr key={idx}>
-                      <td>{idx + 1}</td>
-                      <td>{emp.firstName}</td>
-                      <td>{emp.lastName}</td>
-                      <td className="w-25">
-                        <input
-                          type="number"
-                          className="form-control w-75"
-                          min="0"
-                          defaultValue={emp.hoursWorked}
-                          onChange={(e) =>
-                            handleHoursWorkedChange(
-                              emp.employeeId,
-                              e.currentTarget.value
-                            )
-                          }
-                        />
-                      </td>
-                      <td>
-                        <i className="fa-solid fa-remove text-danger"></i>
-                      </td>
-                    </tr>
-                  ))}
+                  {assignEmps.map((emp, idx) =>
+                    !emp.deleted ? (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{emp.firstName}</td>
+                        <td>{emp.lastName}</td>
+                        <td className="w-25">
+                          <input
+                            type="number"
+                            className="form-control w-75"
+                            min="0"
+                            value={emp.hoursWorked}
+                            onChange={(e) =>
+                              handleHoursWorkedChange(idx, e.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <a href="#/" onClick={(e) => handleItemRemove(idx)}>
+                            <i className="fa-solid fa-remove text-danger"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    ) : null
+                  )}
                 </tbody>
               </table>
             </div>
@@ -147,51 +206,55 @@ const ProDetail = (props) => {
           <div className="border border-secondary rounded p-3">
             <h4>Project Infomation</h4>
             <hr />
-            <table>
+            <table className="table table-borderless">
               <tbody>
-                <tr>
-                  <th className="w-50 py-3">Project Name</th>
-                  <td>{pro.name}</td>
-                </tr>
-                <tr>
-                  <th className="py-3">Max Hours</th>
-                  <td>{pro.maxHours}</td>
-                </tr>
-                <tr>
-                  <th className="py-3">Start Date</th>
-                  <td>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={
-                        pro.startDate != null
-                          ? new Date(pro.startDate).toLocaleDateString("en-CA")
-                          : new Date().toLocaleDateString("en-CA")
-                      }
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <th className="py-3">End Date</th>
-                  <td>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={
-                        pro.endDate != null
-                          ? new Date(pro.endDate).toLocaleDateString("en-CA")
-                          : new Date().toLocaleDateString("en-CA")
-                      }
-                    />
-                  </td>
-                </tr>
+                <TableField
+                  fieldId="name"
+                  fieldName="Project Name"
+                  inputType="text"
+                  frmField={formik.getFieldProps("name")}
+                  err={formik.errors.name && formik.touched.name}
+                  errMessage={formik.errors.name}
+                />
+                <TableField
+                  fieldId="maxHours"
+                  fieldName="Max Hours"
+                  inputType="number"
+                  frmField={formik.getFieldProps("maxHours")}
+                  err={formik.errors.maxHours && formik.touched.maxHours}
+                  errMessage={formik.errors.maxHours}
+                />
+                <TableField
+                  fieldId="startDate"
+                  fieldName="Start Date"
+                  inputType="date"
+                  frmField={formik.getFieldProps("startDate")}
+                  err={formik.errors.startDate && formik.touched.startDate}
+                  errMessage={formik.errors.startDate}
+                />
+                <TableField
+                  fieldId="endDate"
+                  fieldName="End Date"
+                  inputType="date"
+                  frmField={formik.getFieldProps("endDate")}
+                  err={formik.errors.endDate && formik.touched.endDate}
+                  errMessage={formik.errors.endDate}
+                />
                 <tr>
                   <th></th>
                   <td>
-                    <button type="button" className="btn btn-danger me-2 my-2">
+                    <button
+                      type="button"
+                      className="btn btn-danger me-2 my-2"
+                      onClick={(e) => handleProDelete(pro.projectId)}
+                    >
                       Delete
                     </button>
-                    <button type="button" className="btn btn-primary">
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={formik.handleSubmit}
+                    >
                       Save changes
                     </button>
                   </td>
