@@ -10,8 +10,12 @@ const login = (username, password) => {
   return res;
 };
 
+const authorize = (data) =>
+  api.post(api.url.authorize, data).then((res) => res);
+
 const userService = {
   login,
+  authorize,
 };
 
 export default userService;

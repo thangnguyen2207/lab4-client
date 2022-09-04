@@ -7,7 +7,7 @@ import TableField from "../../components/TableField";
 import { useNavigate } from "react-router";
 import AssignService from "../../services/AssignService";
 
-const ProDetail = (props) => {
+const ProDetail = ({ setLoading }) => {
   const [pro, setPro] = useState({});
   const [assignEmps, setAssignEmps] = useState([]);
   const [notAssignEmps, setNotAssignEmps] = useState([]);
@@ -17,17 +17,17 @@ const ProDetail = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      projectId: pro.projectId,
-      name: pro.name,
-      maxHours: pro.maxHours,
+      projectId: pro.projectId || "",
+      name: pro.name || "",
+      maxHours: pro.maxHours || "",
       startDate:
         pro.startDate !== null
-          ? new Date(pro.startDate).toLocaleDateString("en-CA")
-          : new Date().toLocaleDateString("en-CA"),
+          ? new Date(pro.startDate || null).toLocaleDateString("en-CA")
+          : "",
       endDate:
         pro.endDate !== null
-          ? new Date(pro.endDate).toLocaleDateString("en-CA")
-          : new Date().toLocaleDateString("en-CA"),
+          ? new Date(pro.endDate || null).toLocaleDateString("en-CA")
+          : "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required(),
@@ -43,18 +43,22 @@ const ProDetail = (props) => {
 
   useEffect(() => {
     document.title = "Project Infomation";
-    EmpService.assignList(localStorage.getItem("cur-proId")).then((res) => {
-      setAssignEmps(res.data.content);
-      EmpService.notAssignList(localStorage.getItem("cur-proId")).then(
-        (res) => {
-          setNotAssignEmps(res.data.content);
-          ProService.get(localStorage.getItem("cur-proId")).then((res) => {
-            setPro(res.data.content);
-          });
-        }
-      );
+    loadData();
+    setTimeout(() => setLoading(false), 500);
+  }, [setLoading]);
+
+  const loadData = () => {
+    const curProId = localStorage.getItem("cur-proId");
+    EmpService.assignList(curProId).then((res) => {
+      setAssignEmps(res.data);
+      EmpService.notAssignList(curProId).then((res) => {
+        setNotAssignEmps(res.data);
+        ProService.get(curProId).then((res) => {
+          setPro(res.data);
+        });
+      });
     });
-  }, []);
+  };
 
   const handleSearchInput = () => {
     setFilterData(
@@ -82,27 +86,23 @@ const ProDetail = (props) => {
     newItems[index].hoursWorked = value;
     newItems[index].changed = true;
     setAssignEmps(newItems);
-    console.log(assignEmps);
   };
 
   const handleItemRemove = (index) => {
     const newItems = [...assignEmps];
     newItems[index].deleted = true;
     setAssignEmps(newItems);
-    console.log(assignEmps);
   };
 
   const handleProDelete = (id) => {
-    ProService.delete(id).then((res) => {
-      if (res.data.errorCode === 0) {
-        navigate("/project/list");
-      }
+    ProService.delete(id).then(() => {
+      navigate("/project/list");
     });
   };
 
   const handleProUpdate = (data) => {
     ProService.update(data).then((res) => {
-      AssignService.assign(pro.projectId, assignEmps).then((res) => {
+      AssignService.assign(pro.projectId, assignEmps).then(() => {
         navigate("/project/list");
       });
     });

@@ -4,7 +4,7 @@ import DataTable from "react-data-table-component";
 import ProService from "../../services/ProService";
 import DataTableHeader from "../../components/DataTableHeader";
 
-const EmpListSearch = () => {
+const EmpListSearch = ({ setLoading }) => {
   const [hideNo, setHideNo] = useState(false);
   const [hideFirstName, setHideFirstName] = useState(false);
   const [hideLastName, setHideLastName] = useState(false);
@@ -150,25 +150,21 @@ const EmpListSearch = () => {
   useEffect(() => {
     document.title = "Employee List";
     loadData();
-  }, []);
+    setTimeout(() => setLoading(false), 500);
+  }, [setLoading]);
 
   const loadData = () => {
     ProService.list().then((res) => {
-      if (res.data.errorCode === 0) {
-        setPros(res.data.content);
-      }
-      console.log(res.data.content[0]);
-      EmpService.assignList(res.data.content[0].projectId).then((res) => {
-        if (res.data.errorCode === 0) {
-          setEmps(res.data.content);
-        }
+      setPros(res.data);
+      EmpService.assignList(res.data[0].projectId).then((res) => {
+        setEmps(res.data);
       });
     });
   };
 
   const searchData = () => {
     EmpService.assignList(projectRef.current.value).then((res) => {
-      setEmps(res.data.content);
+      setEmps(res.data);
     });
   };
 

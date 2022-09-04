@@ -19,11 +19,11 @@ const Login = (props) => {
     e.preventDefault();
     setErrMessage(
       <div
-        class="spinner-border"
+        className="spinner-border"
         role="status"
         style={{ width: "20px", height: "20px" }}
       >
-        <span class="visually-hidden">Loading...</span>
+        <span className="visually-hidden">Loading...</span>
       </div>
     );
     const username = usernameRef.current.value;
@@ -31,12 +31,10 @@ const Login = (props) => {
     userService
       .login(username, password)
       .then((res) => {
-        if (res.data.errorCode === 0) {
-          localStorage.setItem("user-token", res.data.content);
-          navigate("/home");
-        }
+        localStorage.setItem("user-token", res.data);
+        navigate("/home");
       })
-      .catch((error) => {
+      .catch(() => {
         setErrMessage("Sai tên tài khoản hoặc mật khẩu");
       });
   };

@@ -8,7 +8,7 @@ import * as Yup from "yup";
 import InputField from "../../components/InputField";
 import { toast } from "react-toastify";
 
-const EmpList = (props) => {
+const EmpList = ({ setLoading }) => {
   const [showModal, setShowModal] = useState(false);
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => {
@@ -169,24 +169,25 @@ const EmpList = (props) => {
   useEffect(() => {
     document.title = "Employee List";
     loadData();
-  }, []);
+    setTimeout(() => setLoading(false), 500);
+  }, [setLoading]);
 
   const loadData = () => {
     EmpService.list().then((res) => {
-      if (res.data.errorCode === 0) {
-        setEmps(res.data.content);
-      }
+      setEmps(res.data);
     });
   };
 
   const handleSaveBtn = (data) => {
-    EmpService.add(data).then((res) => {
-      if (res.data.errorCode === 0) {
+    EmpService.add(data)
+      .then((res) => {
         toast.success("Data has been saved");
-      }
-      handleCloseModal();
-      loadData();
-    });
+        handleCloseModal();
+        loadData();
+      })
+      .catch(() => {
+        toast.error("An error has occured");
+      });
   };
 
   return (

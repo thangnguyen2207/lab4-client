@@ -9,7 +9,7 @@ import { useFormik } from "formik";
 import InputField from "../../components/InputField";
 import { toast } from "react-toastify";
 
-const ProList = (props) => {
+const ProList = ({ setLoading }) => {
   const [showModal, setShowModal] = useState(false);
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => {
@@ -189,24 +189,25 @@ const ProList = (props) => {
   useEffect(() => {
     document.title = "Project List";
     loadData();
-  }, []);
+    setTimeout(() => setLoading(false), 500);
+  }, [setLoading]);
 
   const loadData = () => {
     ProService.list().then((res) => {
-      if (res.data.errorCode === 0) {
-        setPros(res.data.content);
-      }
+      setPros(res.data);
     });
   };
 
   const handleSaveBtn = (data) => {
-    ProService.add(data).then((res) => {
-      if (res.data.errorCode === 0) {
+    ProService.add(data)
+      .then((res) => {
         toast.success("Data has been saved");
-      }
-      handleCloseModal();
-      loadData();
-    });
+        handleCloseModal();
+        loadData();
+      })
+      .catch(() => {
+        toast.error("An error has occured");
+      });
   };
 
   return (
