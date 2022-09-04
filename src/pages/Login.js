@@ -58,6 +58,7 @@ const Login = (props) => {
                   type="text"
                   className="form-control mt-2"
                   placeholder="Username"
+                  defaultValue="admin"
                   ref={usernameRef}
                 />
               </div>
@@ -69,6 +70,7 @@ const Login = (props) => {
                   type="password"
                   className="form-control mt-2"
                   placeholder="Password"
+                  defaultValue="1"
                   ref={passwordRef}
                 />
               </div>
